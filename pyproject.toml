@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "compilerdesign"
+version = "1.0.0"
+description = "A Python library for demonstrating compiler design concepts"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+keywords = ["compiler", "lexer", "parser", "grammar", "LL1", "LR0", "FIRST", "FOLLOW"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Education",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Education",
+    "Topic :: Software Development :: Compilers",
+]
+
+[project.urls]
+Homepage = "https://github.com/aditya-ig10/compilerdesign-pythonlib"
+Repository = "https://github.com/yourusername/compilerdesign"
+Issues = "https://github.com/yourusername/compilerdesign/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["compilerdesign*"]
