@@ -1,186 +1,111 @@
 # compilerdesign
 
-A Python library for demonstrating core **Compiler Design** concepts. Import it as `cd` and use clean, simple functions covering everything from lexical analysis to intermediate code generation.
+A teaching Python library that covers the **entire Compiler Design
+syllabus** in one `import`. Every function returns a plain dict / str,
+and every function has a matching `show_*` pretty-printer so you can
+read the output at a glance.
 
 ```bash
 pip install compilerdesign
 ```
 
+```python
+import compilerdesign as cd
+
+cd.show_lexical(cd.lexical_analyzer("int x = 10;"))
+```
+
+> Full walkthrough with input formats, outputs and end-to-end examples
+> lives in **[DOCUMENTATION.md](DOCUMENTATION.md)**.
+> Version history: **[CHANGES.md](CHANGES.md)**.
+
 ---
 
-## Quick Start
+## What's inside
+
+| Topic                              | Core function                     | Pretty-printer                |
+|------------------------------------|-----------------------------------|-------------------------------|
+| Lexical analysis                   | `lexical_analyzer`                | `show_lexical`                |
+| Symbol table                       | `build_symbol_table`              | `show_symbol_table`           |
+| Left-recursion elimination         | `eliminate_left_recursion`        | `show_grammar`                |
+| Left factoring                     | `left_factoring`                  | `show_grammar`                |
+| Ambiguity check (heuristic)        | `check_ambiguity`                 | `show_ambiguity`              |
+| FIRST / FOLLOW                     | `compute_first_follow`            | `show_first_follow`           |
+| LEADING / TRAILING                 | `compute_leading_trailing`        | `show_leading_trailing`       |
+| LL(1) table + parse trace          | `build_ll1_table` / `ll1_parse`   | `show_ll1_table` / `show_parse_trace` |
+| Shift-reduce parser                | `shift_reduce_parse`              | `show_parse_trace`            |
+| LR(0) canonical collection         | `compute_lr0_items`               | `show_lr0`                    |
+| Infix ↔ Postfix ↔ Prefix           | `convert_expression`, etc.        | `show_expression`             |
+| Three-address code (quadruples)    | `generate_three_address_code`     | `show_three_address_code`     |
+| DAG of an expression               | `build_dag`                       | `show_dag`                    |
+
+---
+
+## 60-second tour
 
 ```python
 import compilerdesign as cd
-```
 
----
-
-## Features & API Reference
-
-### 1. Lexical Analyzer
-
-```python
-code = """
-int main() {
-    int x = 10;
-    float y = 3.14;
-    return x + y;
+# 1) Lexical + Symbol table
+src = """
+int add(int a, int b) {
+    int c = a + b * 2;
+    return c;
 }
 """
-result = cd.lexical_analyzer(code)
-print(result['summary'])
-# {'total_tokens': 24, 'keywords': 5, 'identifiers': 4, 'integer_constants': 1,
-#  'float_constants': 1, 'operators': 3, ...}
-print(result['tokens'])       # list of (token_type, value)
-print(result['unique_identifiers'])  # ['main', 'x', 'y']
+cd.show_lexical(cd.lexical_analyzer(src))
+cd.show_symbol_table(cd.build_symbol_table(src))
+
+# 2) Expression → 3AC → DAG
+expr = "a + b * c - d"
+cd.show_three_address_code(cd.generate_three_address_code(expr))
+cd.show_dag(cd.build_dag(expr))
+
+# 3) Grammar pipeline
+g = {'E': ['E + T', 'T'], 'T': ['T * F', 'F'], 'F': ['( E )', 'id']}
+g = cd.eliminate_left_recursion(g)
+cd.show_grammar(g, "NO LEFT RECURSION")
+cd.show_first_follow(cd.compute_first_follow(g, start='E'))
+cd.show_ll1_table(cd.build_ll1_table(g, start='E'))
+cd.show_parse_trace(
+    cd.ll1_parse(g, ['id', '+', 'id', '*', 'id'], start='E'),
+    "LL(1) PARSE",
+)
 ```
 
 ---
 
-### 2. Grammar Transformations
-
-Grammar format: `dict` mapping non-terminal → list of production strings.
+## Grammar input format
 
 ```python
 grammar = {
-    'E': ['E + T', 'T'],
+    'E': ['E + T', 'T'],    # each production is a space-separated string
     'T': ['T * F', 'F'],
-    'F': ['( E )', 'id']
+    'F': ['( E )', 'id'],
 }
-
-# Eliminate Left Recursion
-new_g = cd.eliminate_left_recursion(grammar)
-# {'E': ["T E'"], "E'": ["+ T E'", 'ε'], 'T': ["F T'"], "T'": ["* F T'", 'ε'], ...}
-
-# Left Factoring
-grammar2 = {'A': ['a b', 'a c', 'd']}
-factored = cd.left_factoring(grammar2)
-# {'A': ["a A'", 'd'], "A'": ['b', 'c']}
-
-# Check Ambiguity
-result = cd.check_ambiguity(grammar)
-# {'ambiguous': False, 'issues': []}
+# epsilon: 'ε' or 'eps'
 ```
 
----
-
-### 3. FIRST and FOLLOW Sets
-
-```python
-grammar = {
-    'E':  ['T R'],
-    'R':  ['+ T R', 'ε'],
-    'T':  ['F Y'],
-    'Y':  ['* F Y', 'ε'],
-    'F':  ['( E )', 'i']
-}
-
-result = cd.compute_first_follow(grammar, start='E')
-print(result['FIRST'])   # {'E': ['(', 'i'], 'R': ['+', 'ε'], ...}
-print(result['FOLLOW'])  # {'E': ['$', ')'], 'R': ['$', ')'], ...}
-
-# Or individually:
-first  = cd.compute_first(grammar)
-follow = cd.compute_follow(grammar, start='E')
-```
-
----
-
-### 4. LL(1) Predictive Parsing Table
-
-```python
-table_result = cd.build_ll1_table(grammar, start='E')
-print(table_result['is_ll1'])     # True/False
-print(table_result['table'])      # {(NonTerminal, Terminal): production}
-print(table_result['conflicts'])  # list of conflict strings
-
-# Parse a token string
-parse = cd.ll1_parse(grammar, tokens=['i', '+', 'i', '*', 'i'], start='E')
-print(parse['accepted'])  # True
-for step in parse['steps']:
-    print(step)
-```
-
----
-
-### 5. Shift-Reduce Parsing
+Shift-reduce / LR(0) take a list of tuples instead:
 
 ```python
 productions = [
     ('E', ['E', '+', 'T']),
     ('E', ['T']),
-    ('T', ['T', '*', 'F']),
-    ('T', ['F']),
-    ('F', ['id'])
+    ('T', ['id']),
 ]
-result = cd.shift_reduce_parse(productions, tokens=['id', '+', 'id'])
-print(result['accepted'])  # True
-for step in result['steps']:
-    print(step)  # {'stack': [...], 'input': [...], 'action': '...'}
 ```
 
 ---
 
-### 6. LEADING and TRAILING Sets
+## Running tests
 
-```python
-result = cd.compute_leading_trailing(grammar)
-print(result['LEADING'])   # {'E': ['(', '+', '*', 'i'], ...}
-print(result['TRAILING'])  # {'E': [')', '+', '*', 'i'], ...}
+```bash
+python test_all.py
 ```
-
----
-
-### 7. LR(0) Items
-
-```python
-productions = [
-    ('E', ['E', '+', 'T']),
-    ('E', ['T']),
-    ('T', ['id'])
-]
-result = cd.compute_lr0_items(productions, start='E')
-print(f"Total states: {result['num_states']}")
-for state in result['states']:
-    print(f"\nState {state['id']}:")
-    for item in state['items']:
-        print(f"  {item}")
-for (frm, sym, to) in result['transitions']:
-    print(f"  State {frm} --{sym}--> State {to}")
-```
-
----
-
-### 8. Intermediate Code Generation
-
-```python
-# Infix → Postfix (RPN)
-cd.infix_to_postfix("a + b * c")      # "a b c * +"
-cd.infix_to_postfix("(a + b) * c")    # "a b + c *"
-
-# Infix → Prefix (Polish Notation)
-cd.infix_to_prefix("a + b * c")       # "+ a * b c"
-
-# Postfix → Infix
-cd.postfix_to_infix("a b c * +")      # "(a + (b * c))"
-
-# Prefix → Infix
-cd.prefix_to_infix("+ a * b c")       # "(a + (b * c))"
-
-# Universal converter
-cd.convert_expression("a + b * c", from_notation="infix", to_notation="postfix")
-cd.convert_expression("a b c * +",  from_notation="postfix", to_notation="prefix")
-```
-
----
-
-## Publishing to PyPI
-
-See [PUBLISHING.md](PUBLISHING.md) for step-by-step instructions.
 
 ---
 
 ## License
 
-MIT
+MIT — see [DOCUMENTATION.md](DOCUMENTATION.md) for the full reference.
