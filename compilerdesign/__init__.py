@@ -15,7 +15,7 @@ so you can also see clean, tabular output in one call:
 See DOCUMENTATION.md for the full walk-through.
 """
 
-__version__ = "1.1.0"
+__version__ = "1.0.2"
 __author__ = "Aditya"
 __github__ = "aditya-ig10"
 
@@ -38,7 +38,7 @@ from .ll1 import build_ll1_table, ll1_parse
 from .lr0 import compute_lr0_items
 from .shift_reduce import shift_reduce_parse
 
-# ---- new in 1.1.0 ---------------------------------------------------------
+# ---- new in 1.0.2 ---------------------------------------------------------
 from .symbol_table import build_symbol_table
 from .three_address_code import generate_three_address_code
 from .dag import build_dag
@@ -127,7 +127,7 @@ __all__ = [
     "prefix_to_infix",
     "prefix_to_postfix",
     "convert_expression",
-    # New in 1.1.0
+    # New in 1.0.2
     "build_symbol_table",
     "generate_three_address_code",
     "build_dag",

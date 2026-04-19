@@ -39,3 +39,6 @@ htmlcov/
 documentation.md
 
 PUBLISHING.md
+
+test.py
+test_all.py

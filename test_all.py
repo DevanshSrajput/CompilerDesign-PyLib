@@ -10,7 +10,7 @@ import compilerdesign as cd
 
 def test_help():
     message = cd.help()
-    assert "compilerdesign v1.1.0" in message
+    assert "compilerdesign v1.0.2" in message
     assert "Aditya" in message
     assert "aditya-ig10" in message
     print("OK help")

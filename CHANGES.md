@@ -4,7 +4,16 @@ All substantive edits made during the v1.0.1 → v1.1.0 overhaul.
 
 ---
 
-## 1.1.0 — Library overhaul
+## 1.0.2 — Design improvement release
+
+### Changed
+
+- Design improvements to the project presentation/documentation assets.
+- Version bumped to **1.0.2** for the PyPI release.
+
+---
+
+## 1.0.2 — Library overhaul
 
 ### New modules
 
@@ -45,7 +54,7 @@ All substantive edits made during the v1.0.1 → v1.1.0 overhaul.
 
 ### Packaging
 
-- Bumped version **1.0.1 → 1.1.0** in `pyproject.toml` and
+- Bumped version **1.0.1 → 1.0.2** in `pyproject.toml` and
   `compilerdesign/__init__.py`.
 - Expanded the `description` in `pyproject.toml` to reflect the new
   modules.
